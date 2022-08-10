@@ -74,6 +74,27 @@ func (r *memoryRepository) Rank(id string, beforeN int, afterN int) ([]*model.Sc
 	result := make([]*model.Score, 0, beforeN+afterN+1)
 
 	// TODO: find the rank of the score
+	for i, table := range r.Tables {
+		if i*r.SharedSize < score.Rank && (i+1)*r.SharedSize >= score.Rank {
+			if i == 0 && score.Rank < beforeN {
+				result = append(result, table[:score.Rank]...)
+			} else if score.Rank-1-(i*r.SharedSize) >= beforeN { // 不跨表
+				result = append(result, table[score.Rank-2-(i*r.SharedSize):score.Rank-(i*r.SharedSize)]...)
+			} else {
+				result = append(result, r.Tables[i-1][(r.SharedSize+(i*r.SharedSize)-score.Rank+1-beforeN):]...)
+				result = append(result, table[:score.Rank-(i*r.SharedSize)]...)
+			}
+
+			if i == len(r.Tables)-1 && score.Rank+afterN > len(r.Scores) {
+				result = append(result, table[score.Rank-(i*r.SharedSize):]...)
+			} else if i*r.SharedSize+r.SharedSize >= score.Rank+afterN { // 不跨表
+				result = append(result, table[score.Rank-(i*r.SharedSize):score.Rank-(i*r.SharedSize)+afterN]...)
+			} else {
+				result = append(result, table[score.Rank-(i*r.SharedSize):]...)
+				result = append(result, r.Tables[i+1][:score.Rank+afterN-(i*r.SharedSize)-r.SharedSize]...)
+			}
+		}
+	}
 
 	return result, nil
 }

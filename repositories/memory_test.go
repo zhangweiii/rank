@@ -115,9 +115,16 @@ func TestMemory(t *testing.T) {
 		rank1, err := repo.Rank("4", 1, 1)
 		So(err, ShouldBeNil)
 		So(rank1, ShouldResemble, []*model.Score{
-			{ID: "3", Score: 102, UpdatedAt: 2},
-			{ID: "4", Score: 103, UpdatedAt: 2},
-			{ID: "5", Score: 104, UpdatedAt: 2},
+			{ID: "3", Score: 102, UpdatedAt: 2, Rank: 3},
+			{ID: "4", Score: 103, UpdatedAt: 2, Rank: 4},
+			{ID: "5", Score: 104, UpdatedAt: 2, Rank: 5},
+		})
+		rank3, err := repo.Rank("6", 1, 1)
+		So(err, ShouldBeNil)
+		So(rank3, ShouldResemble, []*model.Score{
+			{ID: "5", Score: 104, UpdatedAt: 2, Rank: 5},
+			{ID: "6", Score: 105, UpdatedAt: 2, Rank: 6},
+			{ID: "7", Score: 106, UpdatedAt: 2, Rank: 7},
 		})
 	})
 }
